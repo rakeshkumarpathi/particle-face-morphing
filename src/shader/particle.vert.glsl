@@ -55,7 +55,7 @@ void main()
     float mouthVerticalGlow =
         exp(
             -pow(
-                (aTarget.y + 2.15) / 0.12,
+                (aTarget.y + 2.15) / 0.18,
                 2.0
             )
         );
@@ -63,8 +63,8 @@ void main()
     float mouthHorizontalGlow =
         1.0 -
         smoothstep(
-            0.25,
-            1.25,
+            0.15,
+            1.5,
             abs(aTarget.x)
         );
 
@@ -188,17 +188,13 @@ void main()
         viewPosition;
 
     float sizeBoost =
-        mix(
-            0.85,
-            1.25,
-            progress
-        );
-
+        1.85;
+    
     gl_PointSize =
         aSize *
         sizeBoost *
         (560.0 / -viewPosition.z);
-
+        
     vAlpha =
         0.75 +
         aRandom * 0.25;

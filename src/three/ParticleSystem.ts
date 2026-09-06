@@ -4,98 +4,81 @@ import vertexShader from "../shader/particle.vert.glsl?raw";
 import fragmentShader from "../shader/particle.frag.glsl?raw";
 
 export class ParticleSystem {
-
   points: THREE.Points;
-
   material: THREE.ShaderMaterial;
 
-
-  constructor(
-    count: number = 25000
-  ) {
+  constructor(count: number = 25000) {
 
     // =================================
     // SHADER MATERIAL
     // =================================
 
-    this.material =
-      new THREE.ShaderMaterial({
+    this.material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
 
-        vertexShader,
+      transparent: true,
 
-        fragmentShader,
+      depthWrite: false,
 
-        transparent: true,
+      blending: THREE.AdditiveBlending,
 
-        depthWrite: false,
+      uniforms: {
+        // Animation time
+        uTime: {
+          value: 0
+        },
 
-        blending:
-          THREE.AdditiveBlending,
+        // Face morph progress
+        // Explicitly start at cloud state
+        uMorphProgress: {
+          value: 0
+        },
 
-        uniforms: {
-
-          // Animation time
-          uTime: {
-            value: 0
-          },
-
-          // Face morph progress
-          uMorphProgress: {
-            value: 0
-          },
-
-          // Talk button state
-          // 0 = still
-          // 1 = talking
-          uTalk: {
-            value: 0
-          }
-
+        // Talk button state
+        // 0 = still
+        // 1 = talking
+        uTalk: {
+          value: 0
         }
-
-      });
+      }
+    });
 
 
     // =================================
     // GEOMETRY
     // =================================
 
-    const geometry =
-      new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
 
 
     // =================================
     // START POSITIONS
     // =================================
 
-    const positions =
-      new Float32Array(
-        count * 3
-      );
+    const positions = new Float32Array(
+      count * 3
+    );
 
 
     // =================================
     // FACE TARGET POSITIONS
     // =================================
 
-    const targets =
-      new Float32Array(
-        count * 3
-      );
+    const targets = new Float32Array(
+      count * 3
+    );
 
 
     // =================================
     // PARTICLE ATTRIBUTES
     // =================================
 
-    const sizes =
-      new Float32Array(count);
+    const sizes = new Float32Array(count);
 
-    const randoms =
-      new Float32Array(count);
+    const randoms = new Float32Array(count);
 
-    const intensities =
-      new Float32Array(count);
+    const intensities = new Float32Array(count);
 
 
     // =================================
@@ -108,9 +91,12 @@ export class ParticleSystem {
       i++
     ) {
 
-      const i3 =
-        i * 3;
+      const i3 = i * 3;
 
+
+      // ---------------------------------
+      // Random cloud radius
+      // ---------------------------------
 
       const radius =
         Math.pow(
@@ -118,6 +104,10 @@ export class ParticleSystem {
           0.7
         ) * 4;
 
+
+      // ---------------------------------
+      // Random spherical position
+      // ---------------------------------
 
       const theta =
         Math.random() *
@@ -151,15 +141,32 @@ export class ParticleSystem {
         0.5;
 
 
+      // ---------------------------------
+      // Particle size
+      // ---------------------------------
+
       sizes[i] =
         0.015 +
         Math.random() *
         0.035;
 
 
+      // ---------------------------------
+      // Random value for shader motion
+      // ---------------------------------
+
       randoms[i] =
         Math.random();
 
+
+      // ---------------------------------
+      // Initial particle intensity
+      //
+      // IMPORTANT:
+      // Do not leave this at 0.
+      // ---------------------------------
+
+      intensities[i] = 1.0;
     }
 
 
@@ -222,6 +229,20 @@ export class ParticleSystem {
         this.material
       );
 
+
+    // =================================
+    // EXPLICIT INITIAL STATE
+    // =================================
+    //
+    // Prevents an unintended first-frame
+    // morph/talking state.
+    //
+
+    this.material.uniforms.uTime.value = 0;
+
+    this.material.uniforms.uMorphProgress.value = 0;
+
+    this.material.uniforms.uTalk.value = 0;
   }
 
 
@@ -236,7 +257,6 @@ export class ParticleSystem {
     this.material.uniforms
       .uTime.value =
       time;
-
   }
 
 
@@ -250,8 +270,11 @@ export class ParticleSystem {
 
     this.material.uniforms
       .uMorphProgress.value =
-      progress;
-
+      THREE.MathUtils.clamp(
+        progress,
+        0,
+        1
+      );
   }
 
 
@@ -272,7 +295,6 @@ export class ParticleSystem {
       talking
         ? 1.0
         : 0.0;
-
   }
 
 
@@ -294,9 +316,9 @@ export class ParticleSystem {
     attribute.array =
       targets;
 
+
     attribute.needsUpdate =
       true;
-
   }
 
 
@@ -309,7 +331,5 @@ export class ParticleSystem {
     this.points.geometry.dispose();
 
     this.material.dispose();
-
   }
-
 }
