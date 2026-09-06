@@ -14,28 +14,59 @@ export class ParticleSystem {
     count: number = 25000
   ) {
 
+    // =================================
+    // SHADER MATERIAL
+    // =================================
+
     this.material =
-    new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
+      new THREE.ShaderMaterial({
 
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+        vertexShader,
 
-      uniforms: {
-        uTime: { value: 0 },
-        uDissolve: { value: 0 }
-      }
+        fragmentShader,
+
+        transparent: true,
+
+        depthWrite: false,
+
+        blending:
+          THREE.AdditiveBlending,
+
+        uniforms: {
+
+          // Animation time
+          uTime: {
+            value: 0
+          },
+
+          // Face morph progress
+          uMorphProgress: {
+            value: 0
+          },
+
+          // Talk button state
+          // 0 = still
+          // 1 = talking
+          uTalk: {
+            value: 0
+          }
+
+        }
+
       });
+
+
+    // =================================
+    // GEOMETRY
+    // =================================
 
     const geometry =
       new THREE.BufferGeometry();
 
 
-    // --------------------------------
+    // =================================
     // START POSITIONS
-    // --------------------------------
+    // =================================
 
     const positions =
       new Float32Array(
@@ -43,9 +74,9 @@ export class ParticleSystem {
       );
 
 
-    // --------------------------------
+    // =================================
     // FACE TARGET POSITIONS
-    // --------------------------------
+    // =================================
 
     const targets =
       new Float32Array(
@@ -53,16 +84,23 @@ export class ParticleSystem {
       );
 
 
+    // =================================
+    // PARTICLE ATTRIBUTES
+    // =================================
+
     const sizes =
       new Float32Array(count);
 
     const randoms =
       new Float32Array(count);
 
+    const intensities =
+      new Float32Array(count);
 
-    // --------------------------------
-    // Create initial cloud
-    // --------------------------------
+
+    // =================================
+    // CREATE INITIAL CLOUD
+    // =================================
 
     for (
       let i = 0;
@@ -70,7 +108,8 @@ export class ParticleSystem {
       i++
     ) {
 
-      const i3 = i * 3;
+      const i3 =
+        i * 3;
 
 
       const radius =
@@ -120,12 +159,13 @@ export class ParticleSystem {
 
       randoms[i] =
         Math.random();
+
     }
 
 
-    // --------------------------------
-    // Geometry
-    // --------------------------------
+    // =================================
+    // GEOMETRY ATTRIBUTES
+    // =================================
 
     geometry.setAttribute(
       "position",
@@ -162,7 +202,7 @@ export class ParticleSystem {
       )
     );
 
-    const intensities = new Float32Array(count);
+
     geometry.setAttribute(
       "aIntensity",
       new THREE.BufferAttribute(
@@ -172,63 +212,73 @@ export class ParticleSystem {
     );
 
 
-
-    // --------------------------------
-    // Shader material
-    // --------------------------------
-
-    this.material =
-      new THREE.ShaderMaterial({
-
-        vertexShader,
-
-        fragmentShader,
-
-        transparent: true,
-
-        depthWrite: false,
-
-        blending:
-          THREE.AdditiveBlending,
-
-        uniforms: {
-
-          uTime: {
-            value: 0
-          },
-
-          uMorphProgress: {
-            value: 0
-          }
-
-        }
-
-      });
-
-
-    // --------------------------------
-    // Points
-    // --------------------------------
+    // =================================
+    // POINTS
+    // =================================
 
     this.points =
       new THREE.Points(
         geometry,
         this.material
       );
-  }
 
-  update(time: number) {
-    this.material.uniforms.uTime.value = time;
-  }
-  
-  setDissolve(progress: number) {
-    this.material.uniforms.uDissolve.value = progress;
   }
 
 
-  // --------------------------------
-  // Set face targets
-  // --------------------------------
+  // =================================
+  // UPDATE TIME
+  // =================================
+
+  update(
+    time: number
+  ) {
+
+    this.material.uniforms
+      .uTime.value =
+      time;
+
+  }
+
+
+  // =================================
+  // SET MORPH PROGRESS
+  // =================================
+
+  setMorphProgress(
+    progress: number
+  ) {
+
+    this.material.uniforms
+      .uMorphProgress.value =
+      progress;
+
+  }
+
+
+  // =================================
+  // TALK CONTROL
+  // =================================
+  //
+  // false = face stays still
+  // true  = mouth starts talking
+  //
+
+  setTalk(
+    talking: boolean
+  ) {
+
+    this.material.uniforms
+      .uTalk.value =
+      talking
+        ? 1.0
+        : 0.0;
+
+  }
+
+
+  // =================================
+  // SET FACE TARGETS
+  // =================================
 
   setTargets(
     targets: Float32Array
@@ -246,33 +296,20 @@ export class ParticleSystem {
 
     attribute.needsUpdate =
       true;
+
   }
 
 
-
-  // --------------------------------
-  // Morph
-  // --------------------------------
-
-  setMorphProgress(
-    progress: number
-  ) {
-
-    this.material.uniforms
-      .uMorphProgress.value =
-      progress;
-  }
-
-
-  // --------------------------------
-  // Dispose
-  // --------------------------------
+  // =================================
+  // DISPOSE
+  // =================================
 
   dispose() {
 
     this.points.geometry.dispose();
 
     this.material.dispose();
+
   }
 
 }

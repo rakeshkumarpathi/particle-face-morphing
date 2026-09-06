@@ -1,12 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { ParticleSystem } from "./three/ParticleSystem";
+
 
 function App() {
 
   const canvasRef =
     useRef<HTMLCanvasElement | null>(null);
+
+  const particlesRef =
+    useRef<ParticleSystem | null>(null);
+
+  const [talking, setTalking] =
+    useState(false);
 
 
   useEffect(() => {
@@ -81,6 +88,9 @@ function App() {
         particleCount
       );
 
+    particlesRef.current =
+      particles;
+
     scene.add(
       particles.points
     );
@@ -115,8 +125,10 @@ function App() {
 
             image.src =
               src;
+
           }
         );
+
       };
 
 
@@ -318,8 +330,6 @@ function App() {
               ) / 255;
 
 
-            // Remove very dark background.
-
             if (
               brightness < 0.10
             ) {
@@ -384,17 +394,20 @@ function App() {
                 y
               );
 
+
             const right =
               sample(
                 x + 6,
                 y
               );
 
+
             const top =
               sample(
                 x,
                 y - 6
               );
+
 
             const bottom =
               sample(
@@ -407,6 +420,7 @@ function App() {
               Math.abs(
                 left - right
               );
+
 
             const verticalContrast =
               Math.abs(
@@ -432,6 +446,7 @@ function App() {
             const nx =
               x /
               face.width;
+
 
             const ny =
               y /
@@ -653,10 +668,6 @@ function App() {
           i++
         ) {
 
-          // ---------------------------------
-          // WEIGHTED SAMPLING
-          // ---------------------------------
-
           let candidate:
             {
               x: number;
@@ -699,9 +710,9 @@ function App() {
           }
 
 
-          // ---------------------------------
+          // =================================
           // X
-          // ---------------------------------
+          // =================================
 
           const x =
             (
@@ -711,9 +722,9 @@ function App() {
             ) * 8.2;
 
 
-          // ---------------------------------
+          // =================================
           // Y
-          // ---------------------------------
+          // =================================
 
           const y =
             (
@@ -723,9 +734,9 @@ function App() {
             ) * 8.2;
 
 
-          // ---------------------------------
+          // =================================
           // Z
-          // ---------------------------------
+          // =================================
 
           const normalizedDepth =
             (
@@ -742,9 +753,9 @@ function App() {
             ) * 3.8;
 
 
-          // ---------------------------------
-          // WRITE POSITION
-          // ---------------------------------
+          // =================================
+          // WRITE TARGET
+          // =================================
 
           const i3 =
             i * 3;
@@ -753,16 +764,18 @@ function App() {
           targets[i3] =
             x;
 
+
           targets[i3 + 1] =
             y;
+
 
           targets[i3 + 2] =
             z;
 
 
-          // ---------------------------------
-          // WRITE IMAGE INTENSITY
-          // ---------------------------------
+          // =================================
+          // IMAGE INTENSITY
+          // =================================
 
           intensityAttribute.setX(
             i,
@@ -770,14 +783,15 @@ function App() {
           );
 
 
-          // ---------------------------------
+          // =================================
           // PARTICLE SIZE
-          // ---------------------------------
+          // =================================
 
           const featureSize =
             0.018 +
             Math.min(
-              candidate.weight / 25.0,
+              candidate.weight /
+              25.0,
               1.0
             ) * 0.035;
 
@@ -792,6 +806,7 @@ function App() {
 
         intensityAttribute.needsUpdate =
           true;
+
 
         sizeAttribute.needsUpdate =
           true;
@@ -818,18 +833,16 @@ function App() {
         const start =
           performance.now();
 
-
         const duration =
-          2500;
+          5000;
 
 
         const morph =
-          (
-            now: number
-          ) => {
+          (now: number) => {
 
             const elapsed =
-              now - start;
+              now -
+              start;
 
 
             const rawProgress =
@@ -840,20 +853,14 @@ function App() {
               );
 
 
-            // Smooth ease-in-out
             const progress =
-              rawProgress < 0.5
-                ? 2.0 *
-                  rawProgress *
-                  rawProgress
-                : 1.0 -
-                  Math.pow(
-                    -2.0 *
-                    rawProgress +
-                    2.0,
-                    2.0
-                  ) /
-                  2.0;
+              rawProgress *
+              rawProgress *
+              (
+                3.0 -
+                2.0 *
+                rawProgress
+              );
 
 
             particles.setMorphProgress(
@@ -867,12 +874,6 @@ function App() {
 
               requestAnimationFrame(
                 morph
-              );
-
-            } else {
-
-              particles.setMorphProgress(
-                1
               );
 
             }
@@ -994,6 +995,10 @@ function App() {
       particles.dispose();
 
 
+      particlesRef.current =
+        null;
+
+
       renderer.dispose();
 
     };
@@ -1001,15 +1006,147 @@ function App() {
   }, []);
 
 
+  // =================================
+  // TALK START
+  // =================================
+
+  const startTalking =
+    () => {
+
+      particlesRef.current
+        ?.setTalk(true);
+
+      setTalking(true);
+
+    };
+
+
+  // =================================
+  // TALK STOP
+  // =================================
+
+  const stopTalking =
+    () => {
+
+      particlesRef.current
+        ?.setTalk(false);
+
+      setTalking(false);
+
+    };
+
+
   return (
-    <canvas
-      ref={canvasRef}
+    <div
       style={{
-        display: "block",
+        position: "relative",
         width: "100vw",
-        height: "100vh"
+        height: "100vh",
+        overflow: "hidden",
+        background: "#000"
       }}
-    />
+    >
+
+      {/* =================================
+          THREE.JS CANVAS
+          ================================= */}
+
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: "block",
+          width: "100vw",
+          height: "100vh"
+        }}
+      />
+
+
+      {/* =================================
+          TALK BUTTON
+          ================================= */}
+
+      <button
+        type="button"
+
+        onPointerDown={
+          startTalking
+        }
+
+        onPointerUp={
+          stopTalking
+        }
+
+        onPointerCancel={
+          stopTalking
+        }
+
+        onPointerLeave={
+          stopTalking
+        }
+
+        style={{
+          position: "absolute",
+
+          left: "50%",
+
+          bottom: "40px",
+
+          transform:
+            "translateX(-50%)",
+
+          padding:
+            "14px 32px",
+
+          border:
+            "1px solid rgba(255,255,255,0.4)",
+
+          borderRadius:
+            "999px",
+
+          background:
+            talking
+              ? "#ffffff"
+              : "rgba(255,255,255,0.08)",
+
+          color:
+            talking
+              ? "#000000"
+              : "#ffffff",
+
+          fontSize:
+            "16px",
+
+          fontWeight:
+            600,
+
+          letterSpacing:
+            "0.04em",
+
+          cursor:
+            "pointer",
+
+          userSelect:
+            "none",
+
+          WebkitUserSelect:
+            "none",
+
+          touchAction:
+            "none",
+
+          transition:
+            "background 0.15s ease, color 0.15s ease",
+
+          zIndex:
+            10
+        }}
+      >
+        {talking
+          ? "TALKING..."
+          : "TALK"}
+      </button>
+
+    </div>
   );
 
 }

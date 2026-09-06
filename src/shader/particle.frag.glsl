@@ -1,7 +1,5 @@
 varying float vAlpha;
-varying float vIntensity;
-
-
+varying float vMouthGlow;
 
 void main()
 {
@@ -32,22 +30,36 @@ void main()
         core * 0.85 +
         glow * 0.25;
 
-    if (alpha < 0.01) {
-        discard;
-    }
-
     vec3 color =
         vec3(
             0.70,
             0.90,
             1.0
         );
-    
+
+    float mouthBoost =
+        max(
+            vMouthGlow,
+            0.0
+        ) * 0.8;
+
+    alpha *=
+        1.0 +
+        mouthBoost;
+
+    alpha *=
+        0.85 *
+        vAlpha;
+
+    if (
+        alpha < 0.01
+    ) {
+        discard;
+    }
+
     gl_FragColor =
         vec4(
             color,
-            alpha *
-            0.85 *
-            vAlpha
+            alpha
         );
 }
