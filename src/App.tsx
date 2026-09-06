@@ -1086,59 +1086,46 @@ function App() {
 
         style={{
           position: "absolute",
-
-          left: "50%",
-
-          bottom: "40px",
-
-          transform:
-            "translateX(-50%)",
-
-          padding:
-            "14px 32px",
-
-          border:
-            "1px solid rgba(255,255,255,0.4)",
-
-          borderRadius:
-            "999px",
-
+        
+          right: "40px",
+          top: "50%",
+        
+          transform: "translateY(-50%)",
+        
+          padding: "14px 32px",
+        
+          border: "1px solid rgba(255,255,255,0.4)",
+        
+          borderRadius: "999px",
+        
           background:
             talking
               ? "#ffffff"
               : "rgba(255,255,255,0.08)",
-
+        
           color:
             talking
               ? "#000000"
               : "#ffffff",
-
-          fontSize:
-            "16px",
-
-          fontWeight:
-            600,
-
-          letterSpacing:
-            "0.04em",
-
-          cursor:
-            "pointer",
-
-          userSelect:
-            "none",
-
-          WebkitUserSelect:
-            "none",
-
-          touchAction:
-            "none",
-
+        
+          fontSize: "16px",
+        
+          fontWeight: 600,
+        
+          letterSpacing: "0.04em",
+        
+          cursor: "pointer",
+        
+          userSelect: "none",
+        
+          WebkitUserSelect: "none",
+        
+          touchAction: "none",
+        
           transition:
             "background 0.15s ease, color 0.15s ease",
-
-          zIndex:
-            10
+        
+          zIndex: 10
         }}
       >
         {talking
